@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 # Load environment variables
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-SERVICE_B_URL = os.getenv("SERVICE_B_URL", "http://localhost:8000")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 # Redis connection
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
@@ -43,7 +43,7 @@ async def handle_user(bio: UserBio):
     # Forward to backend service
     try:
         async with httpx.AsyncClient() as client:
-            res = await client.post(f"{SERVICE_B_URL}/api/save", json=bio.dict())
+            res = await client.post(f"{BACKEND_URL}/api/save", json=bio.dict())
             if res.status_code == 201:
                 return {"message": "Data processed and sent to DB"}, 200
             elif res.status_code == 400:
@@ -65,7 +65,7 @@ async def get_all_users():
     try:
         async with httpx.AsyncClient() as client:
             # call backend (service-b)
-            res = await client.get(f"{SERVICE_B_URL}/api/users")
+            res = await client.get(f"{BACKEND_URL}/api/users")
             if res.status_code != 200:
                 raise HTTPException(status_code=res.status_code, detail="Backend error")
             return res.json()
@@ -80,7 +80,7 @@ async def get_all_users():
 async def get_user_by_id(user_id: int):
     try:
         async with httpx.AsyncClient() as client:
-            res = await client.get(f"{SERVICE_B_URL}/api/users/{user_id}")
+            res = await client.get(f"{BACKEND_URL}/api/users/{user_id}")
             if res.status_code != 200:
                 raise HTTPException(status_code=res.status_code, detail=res.text)
             return res.json()
@@ -94,7 +94,7 @@ async def get_user_by_id(user_id: int):
 async def get_user_by_email(email: str):
     try:
         async with httpx.AsyncClient() as client:
-            res = await client.get(f"{SERVICE_B_URL}/api/user-by-email", params={"email": email})
+            res = await client.get(f"{BACKEND_URL}/api/user-by-email", params={"email": email})
             if res.status_code != 200:
                 raise HTTPException(status_code=res.status_code, detail=res.text)
             return res.json()
